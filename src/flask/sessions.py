@@ -247,6 +247,14 @@ class SessionInterface:
             session.permanent and app.config["SESSION_REFRESH_EACH_REQUEST"]
         )
 
+    # ??question Why does the method `open_session` in the `SessionInterface` class  only throw NotImplementedError?
+    # question??
+    """!!answer
+    The class `SessionInterface` is considered to be an interface because of its name.
+    The implementation of the `open_session` method can be found in the child classes
+    of the `SessionInterface`. In this case, there is only 1 child class:
+    `SecureCookieSessionInterface` in the file "src/flask/sessions.py". answer!!
+    """
     def open_session(self, app: Flask, request: Request) -> SessionMixin | None:
         """This is called at the beginning of each request, after
         pushing the request context, before matching the URL.
@@ -271,6 +279,14 @@ class SessionInterface:
         raise NotImplementedError()
 
 
+# ??question Where is used the variable `session_json_serializer`?
+# question??
+"""!!answer
+The variable `session_json_serializer` is used only in the class `SecureCookieSessionInterface`
+stored in the file "src/flask/sessions.py". It holds a Python serializer for the payload.
+By default, the serializer is a streamlined JSON-based one that also accommodates several
+additional Python data types, including datetime objects and tuples. answer!!
+"""
 session_json_serializer = TaggedJSONSerializer()
 
 
@@ -294,6 +310,13 @@ class SecureCookieSessionInterface(SessionInterface):
     session_class = SecureCookieSession
 
     def get_signing_serializer(self, app: Flask) -> URLSafeTimedSerializer | None:
+        # ??question Where is configured the `app.secret_key` used in the method `get_signing_serializer`? What is the default value of `app.secret_key`?
+        # question??
+        """!!answer
+        The SECRET_KEY configuration key in the config can be used to set this attribute.
+        If not configured, it defaults to None.
+        Besides, the SECRET_KEY is stored in the `ConfigAttribute` class. answer!!
+        """
         if not app.secret_key:
             return None
         signer_kwargs = dict(
@@ -310,10 +333,42 @@ class SecureCookieSessionInterface(SessionInterface):
         s = self.get_signing_serializer(app)
         if s is None:
             return None
+        # ??question How does the application determine the name of the cookie through `self.get_cookie_name(app)`?
+        # question??
+        """!!answer
+        The name of the application cookie is returned by the method `get_cookie_name`.
+        The method `get_cookie_name` determines the name of the cookie
+        by the key "SESSION_COOKIE_NAME" in the configuration. answer!!
+        """
         val = request.cookies.get(self.get_cookie_name(app))
         if not val:
             return self.session_class()
+        # ??question What is the default value of the `max_age` variable in the `open_session` method?
+        # question??
+        """!!answer
+        The default value of the `max_age` variable is 31 days.
+        In seconds, it would be 2678400. answer!!
+        """
+        # ??question Is the call of function int() in the `max_age` variable safe?
+        # question??
+        """!!answer
+        No, it is not safe. The reason is that the `permanent_session_lifetime` attribute of the
+        `App` class initializes the property via calling the `ConfigAttribute` class passing
+        `_make_timedelta` (defined in the "src/flask/app.py" file) as a function argument.
+        The `_make_timedelta` function returns the value of the following
+        data type: timedelta | None. The method `__get__()` of the `ConfigAttribute`
+        returns the result of type `Any`. Thus, the NoneType can be returned.
+        Calling the function `int(None)` with the argument NoneType raises the TypeError
+        exception. answer!!
+        """
         max_age = int(app.permanent_session_lifetime.total_seconds())
+        # ??question In what situations would `BadSignature` be raised in the method `open_session`, and is simply starting a new session the best approach in that case?
+        # question??
+        """!!answer
+        The `BadSignature` exception would be raised if the signature validation fails.
+        The starting of a new session in case of failure seems
+        to be a good solution since there is no way to decode the existing one. answer!!
+        """
         try:
             data = s.loads(val, max_age=max_age)
             return self.session_class(data)

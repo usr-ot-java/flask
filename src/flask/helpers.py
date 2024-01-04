@@ -30,6 +30,12 @@ def get_debug_flag() -> bool:
     :envvar:`FLASK_DEBUG` environment variable. The default is ``False``.
     """
     val = os.environ.get("FLASK_DEBUG")
+    # ??question What does mean the expression `val and val.lower() not in {"0", "false", "no"}`?
+    # question??
+    """!!answer
+    It means that the value of variable `val` and this value converted to lowercase
+    should not be in the following set of values: "0", "false", "no" answer!!
+    """
     return bool(val and val.lower() not in {"0", "false", "no"})
 
 
@@ -42,9 +48,22 @@ def get_load_dotenv(default: bool = True) -> bool:
     """
     val = os.environ.get("FLASK_SKIP_DOTENV")
 
+    # ??question What values can the variable `val` take, so that the current function `get_load_dotenv` returns value from the `default` variable?
+    # question??
+    """!!answer
+    The value of variable `val` can be the empty string (""), the boolean value false (False) or the NoneType (None) answer!!
+    """
     if not val:
         return default
 
+    # ??question Why use tuple "("0", "false", "no")" instead of the dictionary or set?
+    # question??
+    """!!answer
+    The expression {"0", "false", "no"} is a tuple because it is enclosed in parentheses and contains comma-separated elements.
+    In this context, the elements "0", "false", and "no" are considered values within the tuple.
+    Besides, unlike sets, tuples maintain the order of the elements and allow duplicates.
+    Using a tuple ("0", "false", "no") to check if a value is contained is not efficient, as tuples do not provide a direct method for checking the element effectively. answer!!
+    """
     return val.lower() in ("0", "false", "no")
 
 
@@ -85,10 +104,22 @@ def stream_with_context(
     .. versionadded:: 0.9
     """
     try:
+        # ??question What type does the variable `generator_or_function` have?
+        # question??
+        """!!answer
+        The variable `generator_or_function` can be either an iterator of strings (t.Iterator[t.AnyStr])
+        or a function that accepts an arbitrary number of items and returns an iterator
+        of strings (t.Callable[..., t.Iterator[t.AnyStr]]). answer!!
+        """
         gen = iter(generator_or_function)  # type: ignore
     except TypeError:
 
         def decorator(*args: t.Any, **kwargs: t.Any) -> t.Any:
+            # ??question Where is the definition of variable `generator_or_function`?
+            # question??
+            """!!answer The `generator_or_function` is accepted as the first argument
+            to the function `stream_with_context`. answer!!
+            """
             gen = generator_or_function(*args, **kwargs)  # type: ignore
             return stream_with_context(gen)
 
@@ -121,6 +152,13 @@ def stream_with_context(
     # pushed.  This item is discarded.  Then when the iteration continues the
     # real generator is executed.
     wrapped_g = generator()
+    # ??question Why do we specifically call next function the on the generator `wrapped_g`?
+    # question??
+    """!!answer
+    The first item of the generator stored in `wrapped_g` is discarded since
+    it must be inside the context block, otherwise, we cannot save the context.
+    Besides, the first retrieved value is considered as a dummy None. answer!!
+    """
     next(wrapped_g)
     return wrapped_g
 
@@ -168,12 +206,29 @@ def make_response(*args: t.Any) -> Response:
     .. versionadded:: 0.6
     """
     if not args:
+        # ??question What does this branch of code do?
+        # question??
+        """!!answer
+        If `args` is evaluated as False, this function generates a new response argument
+        and returns it as a function result. answer!!
+        """
         return current_app.response_class()
     if len(args) == 1:
         args = args[0]
+    # ??question When this branch of code is executed and what does it do?
+    # question??
+    """!!answer
+    If `args` contains more than 1 argument, then the method `make_response` is called with one argument `args`.
+    The method `make_response` converts the return value of a view function into an instance of :attr:`response_class`. answer!!
+    """
     return current_app.make_response(args)
 
-
+# ??question Why the second argument to the function `url_for` is marked as the star?
+# question??
+"""!!answer
+The second argument is star ("*") because it indicates the end of the positional arguments.
+Every argument after that can only be specified by keyword. answer!!
+"""
 def url_for(
     endpoint: str,
     *,
@@ -227,7 +282,12 @@ def url_for(
         **values,
     )
 
-
+# ??question What does the `code` argument to the function `redirect` mean?
+# question??
+"""!!answer
+The second argument to the `redirect` function (`code`) is the status code for the redirect.
+The default value for the `code` is 302. answer!!
+"""
 def redirect(
     location: str, code: int = 302, Response: type[BaseResponse] | None = None
 ) -> BaseResponse:
@@ -361,6 +421,12 @@ def get_flashed_messages(
     :param with_categories: set to ``True`` to also receive categories.
     :param category_filter: filter of categories to limit return values.  Only
                             categories in the list will be returned.
+    """
+    # ??question What is the type of variable `flashes` in the function `get_flashed_messages`?
+    # question??
+    """!!answer
+    The variable `flashes` in the function `get_flashed_messages` has
+    the following generic type: list[tuple[str, str]] | None. answer!!
     """
     flashes = request_ctx.flashes
     if flashes is None:
@@ -496,6 +562,14 @@ def send_file(
         parameters were added. The default behavior is to add etags.
 
     .. versionadded:: 0.2
+    """
+    # ??question What does mean "**" in the following function call `**_prepare_send_file_kwargs()`?
+    # question??
+    """!!answer
+    The function `_prepare_send_file_kwargs` returns data of the following type: dict[str, t.Any].
+    The double asterisks ** before a dictionary object in the context of a function call
+    is known as the "unpacking" operator. The keys in the returned dictionary have to be named
+    exactly like the parameters of the function `send_file`. answer!!
     """
     return werkzeug.utils.send_file(  # type: ignore[return-value]
         **_prepare_send_file_kwargs(

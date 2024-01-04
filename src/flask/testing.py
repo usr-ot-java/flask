@@ -84,6 +84,12 @@ class EnvironBuilder(werkzeug.test.EnvironBuilder):
         self.app = app
         super().__init__(path, base_url, *args, **kwargs)
 
+    # ??question What is the goal of function `json_dumps`?
+    # question??
+    """!!answer
+    The function `json_dumps` converts the second argument passed to the function called
+     `obj` to a JSON-formatted string representation. answer!!
+    """
     def json_dumps(self, obj: t.Any, **kwargs: t.Any) -> str:  # type: ignore
         """Serialize ``obj`` to a JSON-formatted string.
 
@@ -95,7 +101,12 @@ class EnvironBuilder(werkzeug.test.EnvironBuilder):
 
 _werkzeug_version = ""
 
-
+# ??question How is the function `_get_werkzeug_version` implemented?
+# question??
+"""!!answer
+The function `_get_werkzeug_version` returns the string value of the global variable `_werkzeug_version`
+if defined. Otherwise, it returns the string version for the package `werkzeug`. answer!!
+"""
 def _get_werkzeug_version() -> str:
     global _werkzeug_version
 
@@ -131,6 +142,14 @@ class FlaskClient(Client):
             "HTTP_USER_AGENT": f"Werkzeug/{_get_werkzeug_version()}",
         }
 
+    # ??question What is the reason to annotate the method `session_transaction` with the annotation `@contextmanager`?
+    # question??
+    """!!answer
+    The annotation `@contextmanager` is a decorator that makes this:
+    with session_transaction(<arguments>) as <variable>:
+            <body>
+    answer!!
+    """
     @contextmanager
     def session_transaction(
         self, *args: t.Any, **kwargs: t.Any

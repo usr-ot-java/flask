@@ -136,7 +136,19 @@ def _render(app: Flask, template: Template, context: dict[str, t.Any]) -> str:
     )
     return rv
 
-
+# ??question How does the `render_template` function work?
+# question??
+"""!!answer
+The function `render_template` renders a template utilizing the provided
+context. The first argument to the function `template_name_or_list` refers to the
+name of the template to be rendered. The template is rendered by the Jinja2 engine. answer!!
+"""
+# ??question What is the type of the first argument `template_name_or_list` in the function `render_template`?
+# question??
+"""!!answer
+The first argument `template_name_or_list` in the function `render_template` can have one of the
+following types: str, Template, and list[str | Template]. answer!!
+"""
 def render_template(
     template_name_or_list: str | Template | list[str | Template],
     **context: t.Any,
@@ -146,6 +158,12 @@ def render_template(
     :param template_name_or_list: The name of the template to render. If
         a list is given, the first name to exist will be rendered.
     :param context: The variables to make available in the template.
+    """
+    # ??question Where is defined the variable `current_app`?
+    # question??
+    """!!answer
+    The variable `current_app` is defined in the file `src/flask/globals.py`.
+    answer!!
     """
     app = current_app._get_current_object()  # type: ignore[attr-defined]
     template = app.jinja_env.get_or_select_template(template_name_or_list)
@@ -163,7 +181,13 @@ def render_template_string(source: str, **context: t.Any) -> str:
     template = app.jinja_env.from_string(source)
     return _render(app, template, context)
 
-
+# ??question What is the purpose of the `_stream` method?
+# question??
+"""!!answer
+This function is used for internal purposes. It is called from the `stream_template` and
+`stream_template_string` functions. It enables streaming a template using the provided context.
+This produces a string iterator that can serve as a streamable response from a view. answer!!
+"""
 def _stream(
     app: Flask, template: Template, context: dict[str, t.Any]
 ) -> t.Iterator[str]:
@@ -173,6 +197,14 @@ def _stream(
     )
 
     def generate() -> t.Iterator[str]:
+        # ??question What is the purpose of the expression `yield from template.generate(context)`?
+        # question??
+        """!!answer
+        For big templates, it may be beneficial to avoid rendering the entire template in a single action.
+        Instead, each statement can be processed sequentially one after another.
+        This approach essentially accomplishes this by returning a generator, which produces individual
+        items one at a time in the form of strings. answer!!
+        """
         yield from template.generate(context)
         template_rendered.send(
             app, _async_wrapper=app.ensure_sync, template=template, context=context

@@ -5,6 +5,13 @@ from contextvars import ContextVar
 
 from werkzeug.local import LocalProxy
 
+# ??question Is it a good practice to do imports inside the if-statement as here?
+# question??
+"""!!answer In Python, it is generally not considered good practice to import modules or libraries inside an if statement. Python import statements are typically placed at the top of a file.
+Placing imports inside an if statement can make the code less readable and can potentially cause issues related to importing the same module multiple times in different parts of the code.
+So, it is better to keep import statements at the top of the file.
+answer!!
+"""
 if t.TYPE_CHECKING:  # pragma: no cover
     from .app import Flask
     from .ctx import _AppCtxGlobals
@@ -38,6 +45,12 @@ Working outside of request context.
 This typically means that you attempted to use functionality that needed
 an active HTTP request. Consult the documentation on testing for
 information about how to avoid this problem.\
+"""
+# ??question Why the RequestContext is placed within square brackets?
+# question??
+"""!!answer
+The RequestContext is a generic type that is stored with the ContextVar object.
+answer!!
 """
 _cv_request: ContextVar[RequestContext] = ContextVar("flask.request_ctx")
 request_ctx: RequestContext = LocalProxy(  # type: ignore[assignment]

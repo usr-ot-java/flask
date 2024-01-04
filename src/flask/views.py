@@ -6,6 +6,14 @@ from . import typing as ft
 from .globals import current_app
 from .globals import request
 
+# ??question What is the purpose of using the `frozenset()` function as opposed to the `set()`
+# in the definition of the variable `http_method_funcs`?
+# question??
+"""!!answer
+The reason to use `frozenset()` function as opposed to the `set()` function is that the
+variable `http_method_funcs` contains only read-only HTTP methods that do not change during
+the application lifecycle. answer!!
+"""
 http_method_funcs = frozenset(
     ["get", "post", "head", "options", "delete", "put", "trace", "patch"]
 )
@@ -73,6 +81,13 @@ class View:
     #: .. versionadded:: 2.2
     init_every_request: t.ClassVar[bool] = True
 
+    # ??question What are the implementations of the method `dispatch_request` in the class `View`?
+    # question??
+    """!!answer
+    The class `MethodView` in the file `src/flask/views.py` is inherited from the class `View`.
+    So, the class `MethodView` is the only implementation of the method `dispatch_request`.
+    answer!!
+    """
     def dispatch_request(self) -> ft.ResponseReturnValue:
         """The actual view function behavior. Subclasses must override
         this and return a valid response. Any variables from the URL
@@ -80,6 +95,12 @@ class View:
         """
         raise NotImplementedError()
 
+    # ??question Does the method `as_view` in the `View` class
+    # generate a new instance of the `cls` for each request?
+    # question??
+    """!!answer
+    Typically, a new instance of the view class is created for each request. answer!!
+    """
     @classmethod
     def as_view(
         cls, name: str, *class_args: t.Any, **class_kwargs: t.Any
@@ -175,8 +196,23 @@ class MethodView(View):
                     methods.add(key.upper())
 
             if methods:
+                # ??question What does the following line `cls.methods = methods` mean?
+                # question??
+                """!!answer
+                The class `MethodView` automatically sets `View.methods` based on the
+                methods defined by the class. It also handles subclasses that override
+                or define other methods. answer!!
+                """
                 cls.methods = methods
 
+    # ??question How does the method `dispatch_request` work?
+    # question??
+    """!!answer
+    The method `dispatch_request` calls the implementation of a child class.
+    It attempts to map the HTTP request method name in lowercase
+    to the name of the method of a child class. However, for the request method "HEAD"
+    it may be called the "get" implementation method of a child class. answer!!
+    """
     def dispatch_request(self, **kwargs: t.Any) -> ft.ResponseReturnValue:
         meth = getattr(self, request.method.lower(), None)
 
